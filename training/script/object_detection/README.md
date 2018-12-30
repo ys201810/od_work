@@ -57,7 +57,7 @@ In this directory, you can use only yolov3 now. I want to add other networks in 
 
 ## memo
 ### 480*320
-batch_size:8 -> ok
-batch_size:16 -> ok
-batch_size:32 -> ng
+batch_size:8 -> ok  
+batch_size:16 -> ok  
+batch_size:32 -> ng  
 batch_size:20 -> ng
