@@ -61,3 +61,9 @@ batch_size:8 -> ok
 batch_size:16 -> ok  
 batch_size:32 -> ng  
 batch_size:20 -> ng
+
+### 960*640
+batch_size:8 -> ng  
+batch_size:4 -> ok  
+batch_size:6 -> ng  
+batch_size:5 -> ng
