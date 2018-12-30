@@ -4,3 +4,12 @@
 *.JPG
 *.PNG
 
+# idea dir
+/.idea/
+
+# dataset dir
+/dataset/
+!.gitkeep
+/dataset/object_detection/
+!.gitkeep
+
