@@ -199,6 +199,8 @@ def main():
 
     anchors = get_anchors(anchors_file)
 
+    shutil.copyfile(conf_file, t_conf.save_experiment_dir + conf_file.split('/')[-1])
+
     if t_conf.tiny_flg == 1:
         model = create_tiny_model(input_shape, anchors, num_classes,
             freeze_body=freeze_body, weights_path=pre_train_model)
@@ -221,9 +223,16 @@ def main():
     num_val = int(len(lines)*val_split)
     num_train = len(lines) - num_val
 
+    import pickle
+    with open(t_conf.save_experiment_dir + 'vals.pkl', mode='wb') as f:
+        pickle.dump(lines[num_train:], f)
+
+    freeze_pre_train = True
+
     # Train with frozen layers first, to get a stable loss.
     # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
-    if True:
+    if freeze_pre_train == False:
+        freeze_epoch = int(epochs/2)
         model.compile(optimizer=Adam(lr=1e-3), loss={
             # use custom yolo_loss Lambda layer.
             'yolo_loss': lambda y_true, y_pred: y_pred})
@@ -234,10 +243,14 @@ def main():
                 steps_per_epoch=max(1, num_train//batch_size),
                 validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
                 validation_steps=max(1, num_val//batch_size),
-                epochs=int(epochs/2),
+                epochs=freeze_epoch,
                 initial_epoch=0,
                 callbacks=[logging, checkpoint])
         model.save_weights(save_model_dir + 'trained_weights_stage_1.h5')
+    else:
+        freeze_model_path = '/home/yusuke/work/od_work/training/saved/object_detection/20181231_1223_960_640_200/model/trained_weights_stage_1.h5'
+        freeze_epoch = 0
+        model.load_weights(freeze_model_path)
 
     # Unfreeze and continue training, to fine-tune.
     # Train longer if the result is not good.
@@ -254,8 +267,9 @@ def main():
             validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
             validation_steps=max(1, num_val//batch_size),
             epochs=int(epochs),
-            initial_epoch=int(epochs/2),
-            callbacks=[logging, checkpoint, reduce_lr, early_stopping])
+            initial_epoch=freeze_epoch,
+            callbacks=[logging, checkpoint, reduce_lr])
+            # callbacks=[logging, checkpoint, reduce_lr, early_stopping])
         model.save_weights(save_model_dir + 'trained_weights_final.h5')
 
 
