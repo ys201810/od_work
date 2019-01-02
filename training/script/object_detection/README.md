@@ -67,3 +67,7 @@ batch_size:8 -> ng
 batch_size:4 -> ok  
 batch_size:6 -> ng  
 batch_size:5 -> ng
+batch_size:4 & image num:1512 -> ok
+
+epoch:20, start:06:42:00, end:07:22:00, about 40min
+epoch:50, start:07:23:00, end:09:03:00, about 100min
