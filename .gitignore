@@ -3,6 +3,10 @@
 *.png
 *.JPG
 *.PNG
+*.gif
+*.GIF
+*.jpeg
+*.JPEG
 
 # idea dir
 /.idea/
@@ -13,3 +17,5 @@
 /dataset/object_detection/
 !.gitkeep
 
+# model dir
+/web_if/model/
