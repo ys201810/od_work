@@ -3,6 +3,10 @@
 *.png
 *.JPG
 *.PNG
+*.gif
+*.GIF
+*.jpeg
+*.JPEG
 
 # idea dir
 /.idea/
@@ -13,3 +17,10 @@
 /dataset/object_detection/
 !.gitkeep
 
+# model dir
+/web_if/model/
+
+# web_if's .idea and __pycache__ dir
+/web_if/.idea/
+/web_if/__pycache__/
+/web_if/yolo3/__pycache__/
