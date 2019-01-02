@@ -56,6 +56,7 @@ In this directory, you can use only yolov3 now. I want to add other networks in 
  if you want to fix some points then, please make a issue.
 
 ## memo
+### yolo_v3
 ### 480*320
 batch_size:8 -> ok  
 batch_size:16 -> ok  
@@ -66,8 +67,27 @@ batch_size:20 -> ng
 batch_size:8 -> ng  
 batch_size:4 -> ok  
 batch_size:6 -> ng  
-batch_size:5 -> ng
+batch_size:5 -> ng  
 batch_size:4 & image num:1512 -> ok
 
-epoch:20, start:06:42:00, end:07:22:00, about 40min
-epoch:50, start:07:23:00, end:09:03:00, about 100min
+epoch:20, start:06:42:00, end:07:22:00, about 40min  
+epoch:50, start:07:23:00, end:09:03:00, about 100min  
+
+model_size  
+
+```
+-rw-rw-r-- 1 yusuke yusuke 236M Jan  1 19:06 trained_weights_final.h5
+```
+
+### tiny_yolo
+### 960*640
+batch_size:4 -> ok  
+batch_size:32 -> ng  
+batch_size:16 -> ok  
+
+epoch:500, start:04:12:00, end:
+
+model_size  
+```
+WIP
+```
