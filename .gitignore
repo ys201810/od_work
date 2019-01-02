@@ -10,6 +10,8 @@
 
 # idea dir
 /.idea/
+/preparing/.idea/
+/web_if/.idea/
 
 # dataset dir
 /dataset/
