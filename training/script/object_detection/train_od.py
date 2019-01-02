@@ -128,7 +128,7 @@ def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, n
 def setting_conf(conf_file):
     TrainConfig = namedtuple('TrainConfig', 'batch_size epochs input_shape num_classes ' +
                              'annotation_file classes_file anchors_file pre_train_model save_experiment_dir ' +
-                             'save_model_dir save_log_dir tiny_flg freeze_body')
+                             'save_model_dir save_log_dir tiny_flg freeze_body val_specific val_data_path')
     config = configparser.ConfigParser()
     config.read(conf_file)
 
@@ -155,6 +155,8 @@ def setting_conf(conf_file):
     classes_file = base_dir + config.get('label_info', 'classes_file')
     tiny_flg = int(config.get('other_info', 'tiny_flg'))
     freeze_body = int(config.get('other_info', 'freeze_body')) # freeze_body in [1, 2] 1 = first 185 layer freeze 2 = first 249 layer freeze
+    val_specific = int(config.get('other_info', 'val_specific'))
+    val_data_path = base_dir + config.get('other_info', 'val_data_path')
 
     if not os.path.exists(save_experiment_dir):
         os.mkdir(save_experiment_dir)
@@ -174,7 +176,9 @@ def setting_conf(conf_file):
         save_model_dir,
         save_log_dir,
         tiny_flg,
-        freeze_body
+        freeze_body,
+        val_specific,
+        val_data_path
     )
 
     return t_conf
@@ -196,12 +200,15 @@ def main():
     save_model_dir = t_conf.save_model_dir
     epochs = t_conf.epochs
     batch_size = t_conf.batch_size
+    val_specific = t_conf.val_specific
+    val_data_path = t_conf.val_data_path
+    tiny_flg = t_conf.tiny_flg
 
     anchors = get_anchors(anchors_file)
 
     shutil.copyfile(conf_file, t_conf.save_experiment_dir + conf_file.split('/')[-1])
 
-    if t_conf.tiny_flg == 1:
+    if tiny_flg == 1:
         model = create_tiny_model(input_shape, anchors, num_classes,
             freeze_body=freeze_body, weights_path=pre_train_model)
     else:
@@ -214,20 +221,43 @@ def main():
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1)
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1)
 
-    val_split = 0.1
     with open(annotation_path) as f:
         lines = f.readlines()
-    np.random.seed(10101)
-    np.random.shuffle(lines)
-    np.random.seed(None)
-    num_val = int(len(lines)*val_split)
-    num_train = len(lines) - num_val
 
+    train_data, val_data = [], []
+    if val_specific == 0:
+        val_split = 0.1
+        np.random.seed(10101)
+        np.random.shuffle(lines)
+        np.random.seed(None)
+        num_val = int(len(lines)*val_split)
+        num_train = len(lines) - num_val
+        train_data = lines[:num_train]
+        val_data = lines[num_train:]
+    else:
+        val_list = []
+        with open(val_data_path, 'r') as val_f:
+            for val in val_f:
+                val_list.append(val.rstrip())
+
+        for line in lines:
+            if not line.split(' ')[0].split('/')[-1] in val_list:
+                train_data.append(line)
+            else:
+                val_data.append(line)
+
+        num_val = len(val_data)
+        num_train = len(train_data)
+
+    # print(len(train_data), len(val_data))
+
+    """
     import pickle
     with open(t_conf.save_experiment_dir + 'vals.pkl', mode='wb') as f:
         pickle.dump(lines[num_train:], f)
+    """
 
-    freeze_pre_train = True
+    freeze_pre_train = False
 
     # Train with frozen layers first, to get a stable loss.
     # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
@@ -239,14 +269,19 @@ def main():
 
         batch_size = batch_size
         print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
-        model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes),
+        model.fit_generator(data_generator_wrapper(train_data, batch_size, input_shape, anchors, num_classes),
                 steps_per_epoch=max(1, num_train//batch_size),
-                validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
+                validation_data=data_generator_wrapper(val_data, batch_size, input_shape, anchors, num_classes),
                 validation_steps=max(1, num_val//batch_size),
                 epochs=freeze_epoch,
                 initial_epoch=0,
                 callbacks=[logging, checkpoint])
-        model.save_weights(save_model_dir + 'trained_weights_stage_1.h5')
+
+        if tiny_flg == 1:
+            model.save_weights(save_model_dir + 'tiny_trained_weights_stage_1.h5')
+        else:
+            model.save_weights(save_model_dir + 'trained_weights_stage_1.h5')
+
     else:
         freeze_model_path = '/home/yusuke/work/od_work/training/saved/object_detection/20181231_1223_960_640_200/model/trained_weights_stage_1.h5'
         freeze_epoch = 0
@@ -262,15 +297,18 @@ def main():
 
         batch_size = batch_size # note that more GPU memory is required after unfreezing the body
         print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
-        model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes),
+        model.fit_generator(data_generator_wrapper(train_data, batch_size, input_shape, anchors, num_classes),
             steps_per_epoch=max(1, num_train//batch_size),
-            validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
+            validation_data=data_generator_wrapper(val_data, batch_size, input_shape, anchors, num_classes),
             validation_steps=max(1, num_val//batch_size),
             epochs=int(epochs),
             initial_epoch=freeze_epoch,
             callbacks=[logging, checkpoint, reduce_lr])
             # callbacks=[logging, checkpoint, reduce_lr, early_stopping])
-        model.save_weights(save_model_dir + 'trained_weights_final.h5')
+        if tiny_flg == 1:
+            model.save_weights(save_model_dir + 'tiny_trained_weights_final.h5')
+        else:
+            model.save_weights(save_model_dir + 'trained_weights_final.h5')
 
 
 if __name__ == '__main__':
