@@ -76,7 +76,7 @@ epoch:50, start:07:23:00, end:09:03:00, about 100min
 model_size  
 
 ```
--rw-rw-r-- 1 yusuke yusuke 236M Jan  1 19:06 trained_weights_final.h5
+236M Jan  1 19:06 trained_weights_final.h5
 ```
 
 ### tiny_yolo
@@ -85,9 +85,9 @@ batch_size:4 -> ok
 batch_size:32 -> ng  
 batch_size:16 -> ok  
 
-epoch:500, start:04:12:00, end:
+epoch:300, start:04:33:00, end:13:25:00, about 532min
 
 model_size  
 ```
-WIP
+34M Jan  3 13:23 tiny_trained_weights_final.h5
 ```
