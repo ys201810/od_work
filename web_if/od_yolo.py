@@ -177,8 +177,9 @@ class YOLO(object):
             del draw
 
         end = timer()
-        print(end - start)
-        return image
+        elapse_time = end - start
+        print(elapse_time)
+        return image, elapse_time
 
     def close_session(self):
         self.sess.close()

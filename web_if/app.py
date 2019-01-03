@@ -37,8 +37,8 @@ def detec_sf_rand():
 def send_sf_det():
     # use_model = './model/trained_weights_960_640_yolov3_final.h5'
     use_model = './model/tiny_trained_weights_960_640_final.h5'
-    img_url, result_url = det_inference(use_model)
-    return render_template('detection_andon.html', img_url=img_url, result_url=result_url,
+    img_url, result_url, elapse_time = det_inference(use_model)
+    return render_template('detection_andon.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
                            model_name = 'tiny_960_640_v1')
 
 def det_inference(use_model):
@@ -60,7 +60,7 @@ def det_inference(use_model):
 
             image = Image.open(resize_name)
             yolo = YOLO()
-            r_image = yolo.detect_image(image)
+            r_image, elapse_time = yolo.detect_image(image)
 
             result_name = os.path.join(app.config['UPLOAD_FOLDER'],
                                      filename.split('.')[0] + '_result_det.' + filename.split('.')[1])
@@ -69,7 +69,7 @@ def det_inference(use_model):
             result_img_url = '/uploads/' + filename.split('.')[0] + '_result_det.' + filename.split('.')[1]
 
             backend.clear_session()
-            return resize_img_url, result_img_url
+            return resize_img_url, result_img_url, elapse_time
 
 
 @app.route('/uploads/<filename>')

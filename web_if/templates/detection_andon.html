@@ -14,4 +14,7 @@
     {% if result_url %}
         <p><img src="{{ result_url }}"></p>
     {% endif %}
+    {% if elapse_time %}
+        <p><h5>実行時間: {{ elapse_time }}s.</h5></p>
+    {% endif %}
 {% endblock %}
