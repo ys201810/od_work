@@ -28,18 +28,31 @@ def index():
     """ This is first access point. Get the model list from model directory and send for html's select box."""
     return render_template('index.html')
 
-@app.route('/detec_sf_rand')
-def detec_sf_rand():
+@app.route('/det_andon_tiny_rand')
+def det_andon_tiny_rand():
     """ This is first access point. Get the model list from model directory and send for html's select box."""
-    return render_template('detection_andon.html', model_name = 'tiny_960_640_v1')
+    return render_template('detection_andon_tiny.html', model_name = 'Tiny YOLO(image_size:960_640)')
 
-@app.route('/send_sf_det', methods=['GET', 'POST'])
-def send_sf_det():
-    # use_model = './model/trained_weights_960_640_yolov3_final.h5'
+@app.route('/det_andon_v3_rand')
+def det_andon_v3_rand():
+    """ This is first access point. Get the model list from model directory and send for html's select box."""
+    return render_template('detection_andon_yolov3.html', model_name = 'YOLO v3(image_size:960_640)')
+
+
+@app.route('/send_andon_det_tiny_yolo', methods=['GET', 'POST'])
+def send_andon_det_tiny_yolo():
     use_model = './model/tiny_trained_weights_960_640_final.h5'
     img_url, result_url, elapse_time = det_inference(use_model)
-    return render_template('detection_andon.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
-                           model_name = 'tiny_960_640_v1')
+    return render_template('detection_andon_tiny.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
+                           model_name = 'Tiny YOLO(image_size:960_640)')
+
+@app.route('/send_andon_det_yolov3', methods=['GET', 'POST'])
+def send_andon_det_yolov3():
+    use_model = './model/trained_weights_960_640_yolov3_final.h5'
+    img_url, result_url, elapse_time = det_inference(use_model)
+    return render_template('detection_andon_yolov3.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
+                           model_name = 'YOLO v3(image_size:960_640)')
+
 
 def det_inference(use_model):
     if request.method == 'POST':
