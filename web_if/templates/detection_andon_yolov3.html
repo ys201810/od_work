@@ -8,13 +8,13 @@
     <input type="file" id="img_file" name="img_file" class="col-sm-4">
     <input type="submit" value="解析開始" class="btn">
 </form>
+    {% if elapse_time %}
+        <p><h5>実行時間: {{ elapse_time }}sec</h5></p>
+    {% endif %}
     {% if img_url %}
         <p><img src="{{ img_url }}"></p>
     {% endif %}
     {% if result_url %}
         <p><img src="{{ result_url }}"></p>
-    {% endif %}
-    {% if elapse_time %}
-        <p><h5>実行時間: {{ elapse_time }}s.</h5></p>
     {% endif %}
 {% endblock %}
