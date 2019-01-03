@@ -32,10 +32,12 @@ class YOLO(object):
     """
 
     _defaults = {
-        "model_path": 'model/trained_weights_960_640_yolov3_final.h5',
-        "anchors_path": 'model/yolo_anchors_andon_train_960_640.txt',
+        # "model_path": 'model/trained_weights_960_640_yolov3_final.h5',
+        # "anchors_path": 'model/yolo_anchors_andon_train_960_640.txt',
+        "model_path": 'model/tiny_trained_weights_960_640_final.h5',
+        "anchors_path": 'model/tiny_yolo_anchors_andon_train_960_640.txt',
         "classes_path": 'model/andon_classes.txt',
-        "score" : 0.3,
+        "score" : 0.1,
         "iou" : 0.3,
         "model_image_size" : (640, 960),
         "gpu_num" : 1,

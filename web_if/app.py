@@ -31,14 +31,15 @@ def index():
 @app.route('/detec_sf_rand')
 def detec_sf_rand():
     """ This is first access point. Get the model list from model directory and send for html's select box."""
-    return render_template('detection_andon.html', model_name = 'yolov3_960_640_v1')
+    return render_template('detection_andon.html', model_name = 'tiny_960_640_v1')
 
 @app.route('/send_sf_det', methods=['GET', 'POST'])
 def send_sf_det():
-    use_model = './model/trained_weights_960_640_yolov3_final.h5'
+    # use_model = './model/trained_weights_960_640_yolov3_final.h5'
+    use_model = './model/tiny_trained_weights_960_640_final.h5'
     img_url, result_url = det_inference(use_model)
     return render_template('detection_andon.html', img_url=img_url, result_url=result_url,
-                           model_name = 'yolov3_960_640_v1')
+                           model_name = 'tiny_960_640_v1')
 
 def det_inference(use_model):
     if request.method == 'POST':
