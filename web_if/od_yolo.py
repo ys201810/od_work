@@ -168,6 +168,8 @@ class YOLO(object):
                 draw.rectangle(
                     [left + i, top + i, right - i, bottom - i],
                     outline=self.colors[c])
+
+            # if you want to erase the score and label names then, you should comment out below's 4 row.
             draw.rectangle(
                 [tuple(text_origin), tuple(text_origin + label_size)],
                 fill=self.colors[c])

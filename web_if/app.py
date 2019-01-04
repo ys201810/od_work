@@ -32,11 +32,11 @@ def index():
 
 @app.route('/det_andon_tiny_rand')
 def det_andon_tiny_rand():
-    return render_template('detection_andon_tiny.html', model_name = 'Tiny YOLO(image_size:960_640)')
+    return render_template('detection_andon_tiny.html', model_name = 'Tiny YOLO(image_size:960_640)', scores = [round((i +1) * 0.1, 1) for i in range(10)])
 
 @app.route('/det_andon_v3_rand')
 def det_andon_v3_rand():
-    return render_template('detection_andon_yolov3.html', model_name = 'YOLO v3(image_size:960_640)')
+    return render_template('detection_andon_yolov3.html', model_name = 'YOLO v3(image_size:960_640)', scores = [round((i +1) * 0.1, 1) for i in range(10)])
 
 
 @app.route('/send_andon_det_tiny_yolo', methods=['GET', 'POST'])
@@ -44,20 +44,22 @@ def send_andon_det_tiny_yolo():
     model_kind = 'tiny_yolo'
     use_model = './model/tiny_trained_weights_960_640_final.h5'
     anchors_path = 'model/tiny_yolo_anchors_andon_train_960_640.txt'
-    score = 0.1
-    img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, score)
+    selected_score = float(request.form['score'].split('_')[1]) # score's value format = 'score_0.1' so pick up after _.
+    print(selected_score)
+    img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, selected_score)
     return render_template('detection_andon_tiny.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
-                           model_name = 'Tiny YOLO(image_size:960_640)')
+                           model_name = 'Tiny YOLO(image_size:960_640)', scores = [round((i +1) * 0.1, 1) for i in range(10)], selected_score=selected_score)
 
 @app.route('/send_andon_det_yolov3', methods=['GET', 'POST'])
 def send_andon_det_yolov3():
     model_kind = 'yolov3'
     use_model = './model/trained_weights_960_640_yolov3_final.h5'
     anchors_path = './model/yolov3_anchors_andon_train_960_640.txt'
-    score = 0.3
-    img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, score)
+    selected_score = float(request.form['score'].split('_')[1]) # score's value format = 'score_0.1' so pick up after _.
+    print(selected_score)
+    img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, selected_score)
     return render_template('detection_andon_yolov3.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
-                           model_name = 'YOLO v3(image_size:960_640)')
+                           model_name = 'YOLO v3(image_size:960_640)', scores = [round((i +1) * 0.1, 1) for i in range(10)], selected_score=selected_score)
 
 
 def det_inference(model_kind, use_model, anchors_path, score):
@@ -85,12 +87,12 @@ def det_inference(model_kind, use_model, anchors_path, score):
 
             if model_kind == 'yolov3':
                 result_name = os.path.join(app.config['UPLOAD_FOLDER'],
-                                         filename.split('.')[0] + '_result_yolov3.' + filename.split('.')[1])
-                result_img_url = '/uploads/' + filename.split('.')[0] + '_result_yolov3.' + filename.split('.')[1]
+                                         filename.split('.')[0] + '_' + str(score) + '_result_yolov3.' + filename.split('.')[1])
+                result_img_url = '/uploads/' + filename.split('.')[0] + '_' + str(score) + '_result_yolov3.' + filename.split('.')[1]
             else:
                 result_name = os.path.join(app.config['UPLOAD_FOLDER'],
-                                         filename.split('.')[0] + '_result_tiny_yolo.' + filename.split('.')[1])
-                result_img_url = '/uploads/' + filename.split('.')[0] + '_result_tiny_yolo.' + filename.split('.')[1]
+                                         filename.split('.')[0] + '_' + str(score) + '_result_tiny_yolo.' + filename.split('.')[1])
+                result_img_url = '/uploads/' + filename.split('.')[0] + '_' + str(score) + '_result_tiny_yolo.' + filename.split('.')[1]
 
             r_image.save(result_name, quality=100, optimize=True)
             backend.clear_session()
