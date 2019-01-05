@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post" action="/send_andon_det_tiny_yolo" enctype="multipart/form-data">
+    <p>行灯検出  利用モデル：{{ model_name }}
+        <input type="button" onclick="location.href='/'"value="TOPに戻る"><br>
+    </p>
+
+    <p>
+        検出閾値:[デフォルト:0.1]
+    <select name="score">
+        <option value="score_0.05"> {{ 0.05 }} </option>
+        {% for i in scores %}
+            {% if i == 0.1 %}
+                <option value="score_{{ i }}" selected> {{ i }} </option>
+            {% else %}
+                <option value="score_{{ i }}"> {{ i }} </option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    </p>
+    <input type="file" id="img_file" name="img_file" class="col-sm-4">
+    <input type="submit" value="解析開始" class="btn">
+</form>
+    {% if elapse_time %}
+        <p><h3>実行結果</h3></p>
+        <h5>実行時間: {{ elapse_time }}sec. 実行検出閾値: {{ selected_score }}</h5>
+    {% endif %}
+    {% if img_url %}
+        <p><h5>解析元画像</h5></p>
+        <p><img src="{{ img_url }}"></p>
+    {% endif %}
+    {% if result_url %}
+        <p><h5>解析結果</h5></p>
+        <p><img src="{{ result_url }}"></p>
+    {% endif %}
+{% endblock %}

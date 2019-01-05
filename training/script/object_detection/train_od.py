@@ -128,7 +128,8 @@ def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, n
 def setting_conf(conf_file):
     TrainConfig = namedtuple('TrainConfig', 'batch_size epochs input_shape num_classes ' +
                              'annotation_file classes_file anchors_file pre_train_model save_experiment_dir ' +
-                             'save_model_dir save_log_dir tiny_flg freeze_body val_specific val_data_path')
+                             'save_model_dir save_log_dir tiny_flg used_freezing freeze_body freeze_trained_model ' +
+                             'used_val_specific val_data_path freezed_learning_rate learning_rate')
     config = configparser.ConfigParser()
     config.read(conf_file)
 
@@ -154,9 +155,14 @@ def setting_conf(conf_file):
     annotation_file = base_dir + config.get('label_info', 'annotation_file')
     classes_file = base_dir + config.get('label_info', 'classes_file')
     tiny_flg = int(config.get('other_info', 'tiny_flg'))
+    used_freezing = int(config.get('other_info', 'used_freezing'))
     freeze_body = int(config.get('other_info', 'freeze_body')) # freeze_body in [1, 2] 1 = first 185 layer freeze 2 = first 249 layer freeze
-    val_specific = int(config.get('other_info', 'val_specific'))
+    freeze_trained_model = config.get('other_info', 'freeze_trained_model')
+    used_val_specific = int(config.get('other_info', 'used_val_specific'))
     val_data_path = base_dir + config.get('other_info', 'val_data_path')
+
+    freezed_learning_rate = float(config.get('train_info', 'freezed_learning_rate'))
+    learning_rate = float(config.get('train_info', 'learning_rate'))
 
     if not os.path.exists(save_experiment_dir):
         os.mkdir(save_experiment_dir)
@@ -176,9 +182,13 @@ def setting_conf(conf_file):
         save_model_dir,
         save_log_dir,
         tiny_flg,
+        used_freezing,
         freeze_body,
-        val_specific,
-        val_data_path
+        freeze_trained_model,
+        used_val_specific,
+        val_data_path,
+        freezed_learning_rate,
+        learning_rate
     )
 
     return t_conf
@@ -195,14 +205,19 @@ def main():
     num_classes = t_conf.num_classes
     input_shape = t_conf.input_shape[:2] # multiple of 32, hw
     pre_train_model = t_conf.pre_train_model
+    used_freezing = t_conf.used_freezing
     freeze_body = t_conf.freeze_body
+    freeze_trained_model = t_conf.freeze_trained_model
     save_log_dir = t_conf.save_log_dir
     save_model_dir = t_conf.save_model_dir
     epochs = t_conf.epochs
     batch_size = t_conf.batch_size
-    val_specific = t_conf.val_specific
+    used_val_specific = t_conf.used_val_specific
     val_data_path = t_conf.val_data_path
     tiny_flg = t_conf.tiny_flg
+    freezed_learning_rate = t_conf.freezed_learning_rate
+    learning_rate = t_conf.learning_rate
+
 
     anchors = get_anchors(anchors_file)
 
@@ -225,7 +240,7 @@ def main():
         lines = f.readlines()
 
     train_data, val_data = [], []
-    if val_specific == 0:
+    if used_val_specific == 0:
         val_split = 0.1
         np.random.seed(10101)
         np.random.shuffle(lines)
@@ -257,13 +272,11 @@ def main():
         pickle.dump(lines[num_train:], f)
     """
 
-    freeze_pre_train = False
-
     # Train with frozen layers first, to get a stable loss.
     # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
-    if freeze_pre_train == False:
+    if used_freezing == 1:
         freeze_epoch = int(epochs/2)
-        model.compile(optimizer=Adam(lr=1e-3), loss={
+        model.compile(optimizer=Adam(lr=freezed_learning_rate), loss={
             # use custom yolo_loss Lambda layer.
             'yolo_loss': lambda y_true, y_pred: y_pred})
 
@@ -283,7 +296,7 @@ def main():
             model.save_weights(save_model_dir + 'trained_weights_stage_1.h5')
 
     else:
-        freeze_model_path = '/home/yusuke/work/od_work/training/saved/object_detection/20181231_1223_960_640_200/model/trained_weights_stage_1.h5'
+        freeze_model_path = freeze_trained_model
         freeze_epoch = 0
         model.load_weights(freeze_model_path)
 
@@ -292,7 +305,7 @@ def main():
     if True:
         for i in range(len(model.layers)):
             model.layers[i].trainable = True
-        model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred}) # recompile to apply the change
+        model.compile(optimizer=Adam(lr=learning_rate), loss={'yolo_loss': lambda y_true, y_pred: y_pred}) # recompile to apply the change
         print('Unfreeze all of the layers.')
 
         batch_size = batch_size # note that more GPU memory is required after unfreezing the body

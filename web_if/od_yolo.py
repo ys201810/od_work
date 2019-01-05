@@ -32,8 +32,6 @@ class YOLO(object):
     """
 
     _defaults = {
-        # "model_path": 'model/trained_weights_960_640_yolov3_final.h5',
-        # "anchors_path": 'model/yolo_anchors_andon_train_960_640.txt',
         "model_path": 'model/tiny_trained_weights_960_640_final.h5',
         "anchors_path": 'model/tiny_yolo_anchors_andon_train_960_640.txt',
         "classes_path": 'model/andon_classes.txt',
@@ -170,6 +168,8 @@ class YOLO(object):
                 draw.rectangle(
                     [left + i, top + i, right - i, bottom - i],
                     outline=self.colors[c])
+
+            # if you want to erase the score and label names then, you should comment out below's 4 row.
             draw.rectangle(
                 [tuple(text_origin), tuple(text_origin + label_size)],
                 fill=self.colors[c])
@@ -177,8 +177,9 @@ class YOLO(object):
             del draw
 
         end = timer()
-        print(end - start)
-        return image
+        elapse_time = end - start
+        print(elapse_time)
+        return image, elapse_time
 
     def close_session(self):
         self.sess.close()

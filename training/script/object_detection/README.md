@@ -61,7 +61,22 @@ In this directory, you can use only yolov3 now. I want to add other networks in 
 batch_size:8 -> ok  
 batch_size:16 -> ok  
 batch_size:32 -> ng  
-batch_size:20 -> ng
+batch_size:20 -> ng  
+
+epoch:300, start:06:15:00, end:08:36:00, about 141min  
+
+model_size
+
+```
+236M Jan  5 08:16 ep261-loss16.483-val_loss15.922.h5
+```
+
+### tiny_yolo
+batch_size:32 -> ok  
+batch_size:64 -> ok
+batch_size:128 -> ng
+
+epoch:300, start
 
 ### 960*640
 batch_size:8 -> ng  

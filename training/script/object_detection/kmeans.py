@@ -59,7 +59,7 @@ class YOLO_Kmeans:
         return clusters
 
     def result2txt(self, data):
-        f = open("tiny_yolo_anchors_andon_train_960_640.txt", 'w')
+        f = open("tiny_yolo_anchors_andon_train_480_320.txt", 'w')
         row = np.shape(data)[0]
         for i in range(row):
             if i == 0:
@@ -98,6 +98,6 @@ class YOLO_Kmeans:
 if __name__ == "__main__":
     cluster_number = 6 # if you want to use yolov3 then you have to set 9. if you want to use tiny yolo then you have to set 6.
     # filename = "2012_train.txt"
-    filename = "../../../datasets/object_detection/andon/anno/train_960_640.txt"
+    filename = "../../../datasets/object_detection/andon/anno/train_480_320.txt"
     kmeans = YOLO_Kmeans(cluster_number, filename)
     kmeans.txt2clusters()
