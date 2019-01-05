@@ -30,42 +30,74 @@ def allowed_file(filename):
 def index():
     return render_template('index.html')
 
-@app.route('/det_andon_tiny_rand')
-def det_andon_tiny_rand():
-    return render_template('detection_andon_tiny.html', model_name = 'Tiny YOLO(image_size:960_640)', scores = [round((i +1) * 0.1, 1) for i in range(10)])
+@app.route('/det_andon_tiny_rand_960_640')
+def det_andon_tiny_rand_960_640():
+    return render_template('detection_andon_tiny_960_640.html', model_name = 'Tiny YOLO(image_size:960_640)', scores = [round((i +1) * 0.1, 1) for i in range(10)])
 
-@app.route('/det_andon_v3_rand')
-def det_andon_v3_rand():
-    return render_template('detection_andon_yolov3.html', model_name = 'YOLO v3(image_size:960_640)', scores = [round((i +1) * 0.1, 1) for i in range(10)])
+@app.route('/det_andon_v3_rand_960_640')
+def det_andon_v3_rand_960_640():
+    return render_template('detection_andon_yolov3_960_640.html', model_name = 'YOLO v3(image_size:960_640)', scores = [round((i +1) * 0.1, 1) for i in range(10)])
 
+@app.route('/det_andon_tiny_rand_480_320')
+def det_andon_tiny_rand_480_320():
+    return render_template('detection_andon_tiny_480_320.html', model_name = 'Tiny YOLO(image_size:480_320)', scores = [round((i +1) * 0.1, 1) for i in range(10)])
 
-@app.route('/send_andon_det_tiny_yolo', methods=['GET', 'POST'])
-def send_andon_det_tiny_yolo():
-    model_kind = 'tiny_yolo'
+@app.route('/det_andon_v3_rand_480_320')
+def det_andon_v3_rand_480_320():
+    return render_template('detection_andon_yolov3_480_320.html', model_name = 'YOLO v3(image_size:480_320)', scores = [round((i +1) * 0.1, 1) for i in range(10)])
+
+@app.route('/send_andon_det_tiny_yolo_960_640', methods=['GET', 'POST'])
+def send_andon_det_tiny_yolo_960_640():
+    model_kind = 'tiny_yolo_960_640'
     use_model = './model/tiny_trained_weights_960_640_final.h5'
     anchors_path = 'model/tiny_yolo_anchors_andon_train_960_640.txt'
+    resize_size = (960, 640)
     selected_score = float(request.form['score'].split('_')[1]) # score's value format = 'score_0.1' so pick up after _.
     print(selected_score)
-    img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, selected_score)
-    return render_template('detection_andon_tiny.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
+    img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, selected_score, resize_size)
+    return render_template('detection_andon_tiny_960_640.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
                            model_name = 'Tiny YOLO(image_size:960_640)', scores = [round((i +1) * 0.1, 1) for i in range(10)], selected_score=selected_score)
 
-@app.route('/send_andon_det_yolov3', methods=['GET', 'POST'])
-def send_andon_det_yolov3():
-    model_kind = 'yolov3'
+@app.route('/send_andon_det_yolov3_960_640', methods=['GET', 'POST'])
+def send_andon_det_yolov3_960_640():
+    model_kind = 'yolov3_960_640'
     use_model = './model/trained_weights_960_640_yolov3_final.h5'
     anchors_path = './model/yolov3_anchors_andon_train_960_640.txt'
+    resize_size = (960, 640)
     selected_score = float(request.form['score'].split('_')[1]) # score's value format = 'score_0.1' so pick up after _.
     print(selected_score)
-    img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, selected_score)
-    return render_template('detection_andon_yolov3.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
+    img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, selected_score, resize_size)
+    return render_template('detection_andon_yolov3_960_640.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
                            model_name = 'YOLO v3(image_size:960_640)', scores = [round((i +1) * 0.1, 1) for i in range(10)], selected_score=selected_score)
 
+@app.route('/send_andon_det_tiny_yolo_480_320', methods=['GET', 'POST'])
+def send_andon_det_tiny_yolo_480_320():
+    model_kind = 'tiny_yolo_960_640'
+    use_model = './model/tiny_trained_weights_480_320_final.h5'
+    anchors_path = 'model/tiny_yolo_anchors_andon_train_480_320.txt'
+    resize_size = (480, 320)
+    selected_score = float(request.form['score'].split('_')[1]) # score's value format = 'score_0.1' so pick up after _.
+    print(selected_score)
+    img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, selected_score, resize_size)
+    return render_template('detection_andon_tiny_480_320.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
+                           model_name = 'Tiny YOLO(image_size:480_320)', scores = [round((i +1) * 0.1, 1) for i in range(10)], selected_score=selected_score)
 
-def det_inference(model_kind, use_model, anchors_path, score):
+@app.route('/send_andon_det_yolov3_480_320', methods=['GET', 'POST'])
+def send_andon_det_yolov3_480_320():
+    model_kind = 'yolov3_480_320'
+    use_model = './model/trained_weights_480_320_yolov3_final.h5'
+    anchors_path = './model/yolov3_anchors_andon_train_480_320.txt'
+    resize_size = (480, 320)
+    selected_score = float(request.form['score'].split('_')[1]) # score's value format = 'score_0.1' so pick up after _.
+    print(selected_score)
+    img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, selected_score, resize_size)
+    return render_template('detection_andon_yolov3_480_320.html', img_url=img_url, result_url=result_url, elapse_time=round(elapse_time, 2),
+                           model_name = 'YOLO v3(image_size:480_320)', scores = [round((i +1) * 0.1, 1) for i in range(10)], selected_score=selected_score)
+
+
+def det_inference(model_kind, use_model, anchors_path, score, resize_size):
     if request.method == 'POST':
         img_file = request.files['img_file']
-        resize_size = (960, 640)
         if img_file and allowed_file(img_file.filename):
             filename = secure_filename(img_file.filename)
             os.chdir(os.path.dirname(__file__))
@@ -85,14 +117,14 @@ def det_inference(model_kind, use_model, anchors_path, score):
             yolo = YOLO(model_path=use_model, anchors_path=anchors_path, score=score)
             r_image, elapse_time = yolo.detect_image(image)
 
-            if model_kind == 'yolov3':
+            if model_kind.find('yolov3') > 0:
                 result_name = os.path.join(app.config['UPLOAD_FOLDER'],
-                                         filename.split('.')[0] + '_' + str(score) + '_result_yolov3.' + filename.split('.')[1])
-                result_img_url = '/uploads/' + filename.split('.')[0] + '_' + str(score) + '_result_yolov3.' + filename.split('.')[1]
+                                         filename.split('.')[0] + '_' + str(score).replace('.', '') + '_' + '_'.join(map(str,list(resize_size))) + '_result_yolov3.' + filename.split('.')[1])
+                result_img_url = '/uploads/' + filename.split('.')[0] + '_' + str(score).replace('.', '') + '_' +  '_'.join(map(str,list(resize_size))) + '_result_yolov3.' + filename.split('.')[1]
             else:
                 result_name = os.path.join(app.config['UPLOAD_FOLDER'],
-                                         filename.split('.')[0] + '_' + str(score) + '_result_tiny_yolo.' + filename.split('.')[1])
-                result_img_url = '/uploads/' + filename.split('.')[0] + '_' + str(score) + '_result_tiny_yolo.' + filename.split('.')[1]
+                                         filename.split('.')[0] + '_' + str(score).replace('.', '') + '_' + '_'.join(map(str,list(resize_size))) + '_result_tiny_yolo.' + filename.split('.')[1])
+                result_img_url = '/uploads/' + filename.split('.')[0] + '_' + str(score).replace('.', '') + '_' + '_'.join(map(str,list(resize_size))) + '_result_tiny_yolo.' + filename.split('.')[1]
 
             r_image.save(result_name, quality=100, optimize=True)
             backend.clear_session()

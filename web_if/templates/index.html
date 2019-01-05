@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <form method="post" enctype="multipart/form-data">
-   <input type="button" onclick="location.href='/det_andon_tiny_rand'" value="[検出]行灯(Tiny YOLO)" style="WIDTH: 200px; HEIGHT: 200px"><br>
-   <input type="button" onclick="location.href='/det_andon_v3_rand'" value="[検出]行灯(YOLO v3)" style="WIDTH: 200px; HEIGHT: 200px">
+   <input type="button" onclick="location.href='/det_andon_tiny_rand_960_640'" value="[検出]行灯(Tiny YOLO)[960_640]" style="WIDTH: 200px; HEIGHT: 200px"><br>
+   <input type="button" onclick="location.href='/det_andon_v3_rand_960_640'" value="[検出]行灯(YOLO v3)[960_640]" style="WIDTH: 200px; HEIGHT: 200px"><br>
+   <input type="button" onclick="location.href='/det_andon_tiny_rand_480_320'" value="[検出]行灯(Tiny YOLO)[480_320]" style="WIDTH: 200px; HEIGHT: 200px"><br>
+   <input type="button" onclick="location.href='/det_andon_v3_rand_480_320'" value="[検出]行灯(YOLO v3)[480_320]" style="WIDTH: 200px; HEIGHT: 200px">
    <!-- <input type="button" onclick="location.href='/class_shashu_rand'"value="[分類]bike types"><br> -->
 </form>
 {% endblock %}
