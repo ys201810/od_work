@@ -128,7 +128,8 @@ def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, n
 def setting_conf(conf_file):
     TrainConfig = namedtuple('TrainConfig', 'batch_size epochs input_shape num_classes ' +
                              'annotation_file classes_file anchors_file pre_train_model save_experiment_dir ' +
-                             'save_model_dir save_log_dir tiny_flg freeze_body val_specific val_data_path')
+                             'save_model_dir save_log_dir tiny_flg freeze_body val_specific val_data_path '+
+                             'freezed_learning_rate learning_rate')
     config = configparser.ConfigParser()
     config.read(conf_file)
 
@@ -158,6 +159,9 @@ def setting_conf(conf_file):
     val_specific = int(config.get('other_info', 'val_specific'))
     val_data_path = base_dir + config.get('other_info', 'val_data_path')
 
+    freezed_learning_rate = float(config.get('train_info', 'freezed_learning_rate'))
+    learning_rate = float(config.get('train_info', 'learning_rate'))
+
     if not os.path.exists(save_experiment_dir):
         os.mkdir(save_experiment_dir)
     os.mkdir(save_log_dir)
@@ -178,7 +182,9 @@ def setting_conf(conf_file):
         tiny_flg,
         freeze_body,
         val_specific,
-        val_data_path
+        val_data_path,
+        freezed_learning_rate,
+        learning_rate
     )
 
     return t_conf
@@ -203,6 +209,9 @@ def main():
     val_specific = t_conf.val_specific
     val_data_path = t_conf.val_data_path
     tiny_flg = t_conf.tiny_flg
+    freezed_learning_rate = t_conf.freezed_learning_rate
+    learning_rate = t_conf.learning_rate
+
 
     anchors = get_anchors(anchors_file)
 
@@ -263,7 +272,7 @@ def main():
     # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
     if freeze_pre_train == False:
         freeze_epoch = int(epochs/2)
-        model.compile(optimizer=Adam(lr=1e-3), loss={
+        model.compile(optimizer=Adam(lr=freezed_learning_rate), loss={
             # use custom yolo_loss Lambda layer.
             'yolo_loss': lambda y_true, y_pred: y_pred})
 
@@ -292,7 +301,7 @@ def main():
     if True:
         for i in range(len(model.layers)):
             model.layers[i].trainable = True
-        model.compile(optimizer=Adam(lr=1e-4), loss={'yolo_loss': lambda y_true, y_pred: y_pred}) # recompile to apply the change
+        model.compile(optimizer=Adam(lr=learning_rate), loss={'yolo_loss': lambda y_true, y_pred: y_pred}) # recompile to apply the change
         print('Unfreeze all of the layers.')
 
         batch_size = batch_size # note that more GPU memory is required after unfreezing the body
