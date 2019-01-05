@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, session
+from flask import Flask, render_template, request, send_from_directory
 from werkzeug import secure_filename
 import cv2
-import numpy as np
-from od_predict import YOLO
+from od_yolo import YOLO
 from PIL import Image
 import os
 from keras.backend import tensorflow_backend as backend
