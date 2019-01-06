@@ -7,6 +7,7 @@ from od_yolo import YOLO
 from PIL import Image
 import os
 from keras.backend import tensorflow_backend as backend
+import numpy as np
 
 
 app = Flask(__name__)
@@ -52,6 +53,13 @@ def det_andon_v3_rand_480_320():
     return render_template('detection_andon_yolov3_480_320.html', model_name = 'YOLO v3(image_size:480_320)',
                            scores = [round((i +1) * 0.1, 1) for i in range(10)])
 
+@app.route('/det_andon_rand_all')
+def det_andon_v3_rand_all():
+    """480*320のyolov3での解析ページの初期状態記述"""
+    return render_template('detection_andon_all.html', model_name = 'ALL',
+                           scores = [round((i +1) * 0.1, 1) for i in range(10)])
+
+
 @app.route('/send_andon_det_tiny_yolo_960_640', methods=['GET', 'POST'])
 def send_andon_det_tiny_yolo_960_640():
     """960*480のtiny yoloでの画像アップロード後の解析と結果表示記述"""
@@ -83,7 +91,7 @@ def send_andon_det_yolov3_960_640():
 @app.route('/send_andon_det_tiny_yolo_480_320', methods=['GET', 'POST'])
 def send_andon_det_tiny_yolo_480_320():
     """480*320のtiny yoloでの画像アップロード後の解析と結果表示記述"""
-    model_kind = 'tiny_yolo_960_640'
+    model_kind = 'tiny_yolo_480_320'
     use_model = './model/tiny_trained_weights_480_320_final.h5'
     anchors_path = 'model/tiny_yolo_anchors_andon_train_480_320.txt'
     resize_size = (480, 320)
@@ -109,6 +117,54 @@ def send_andon_det_yolov3_480_320():
                            scores = [round((i +1) * 0.1, 1) for i in range(10)], selected_score=selected_score)
 
 
+
+@app.route('/send_andon_det_yolo_all', methods=['GET', 'POST'])
+def send_andon_det_yolo_all():
+    """全てのモデルでの画像アップロード後の解析と結果表示記述"""
+    model_kinds = ['yolov3_960_640', 'yolov3_480_320', 'tiny_yolo_960_640', 'tiny_yolo_480_320']
+    img_urls, result_urls, elapse_times, selected_scores = [], [], [], []
+
+    for model_kind in model_kinds:
+        if model_kind == 'yolov3_960_640':
+            use_model = './model/trained_weights_960_640_yolov3_final.h5'
+            anchors_path = './model/yolov3_anchors_andon_train_960_640.txt'
+            resize_size = (960, 640)
+            selected_score = float(request.form['score_v3_960_640'].split('_')[1]) # score's value format = 'score_0.1' so pick up after '_' charactor.
+
+        elif model_kind == 'yolov3_480_320':
+            use_model = './model/trained_weights_480_320_yolov3_final.h5'
+            anchors_path = './model/yolov3_anchors_andon_train_480_320.txt'
+            resize_size = (480, 320)
+            selected_score = float(request.form['score_v3_480_320'].split('_')[1]) # score's value format = 'score_0.1' so pick up after '_' charactor.
+
+        elif model_kind == 'tiny_yolo_960_640':
+            use_model = './model/tiny_trained_weights_960_640_final.h5'
+            anchors_path = 'model/tiny_yolo_anchors_andon_train_960_640.txt'
+            resize_size = (960, 640)
+            selected_score = float(request.form['score_tiny_960_640'].split('_')[1]) # score's value format = 'score_0.1' so pick up after '_' charactor.
+
+        elif model_kind == 'tiny_yolo_480_320':
+            model_kind = 'tiny_yolo_480_320'
+            use_model = './model/tiny_trained_weights_480_320_final.h5'
+            anchors_path = 'model/tiny_yolo_anchors_andon_train_480_320.txt'
+            resize_size = (480, 320)
+            selected_score = float(request.form['score_tiny_480_320'].split('_')[1]) # score's value format = 'score_0.1' so pick up after '_' charactor.
+
+        img_url, result_url, elapse_time = det_inference(model_kind, use_model, anchors_path, selected_score, resize_size)
+
+        img_urls.append(img_url)
+        result_urls.append(result_url)
+        elapse_times.append(elapse_time)
+        selected_scores.append(selected_score)
+
+    elapse_times = np.array(elapse_times)
+    elapse_times = np.round(elapse_times, 3)
+    elapse_times = elapse_times.tolist()
+    return render_template('detection_andon_all.html', img_url=img_urls[0], result_urls=result_urls, elapse_times=elapse_times,
+                           model_name = 'ALL',
+                           scores = [round((i +1) * 0.1, 1) for i in range(10)], selected_scores=selected_scores)
+
+
 def det_inference(model_kind, use_model, anchors_path, score, resize_size):
     """
     アップロードされた画像を用いた解析の実行と結果のreturn
@@ -128,7 +184,8 @@ def det_inference(model_kind, use_model, anchors_path, score, resize_size):
             img_postfix = org_img_name.split('.')[1]
             os.chdir(os.path.dirname(__file__))
             # アップロード画像の保存
-            img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], org_img_name))
+            if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], org_img_name)):
+                img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], org_img_name))
             img = cv2.imread(os.path.join(app.config['UPLOAD_FOLDER'], org_img_name))
 
             # リサイズ画像の保存
