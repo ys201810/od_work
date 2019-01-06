@@ -73,10 +73,10 @@ model_size
 
 ### tiny_yolo
 batch_size:32 -> ok  
-batch_size:64 -> ok
-batch_size:128 -> ng
+batch_size:64 -> ok  
+batch_size:128 -> ng  
 
-epoch:300, start
+epoch:300, start:09:12:00, end:11:13:00, about 121min
 
 ### 960*640
 batch_size:8 -> ng  
